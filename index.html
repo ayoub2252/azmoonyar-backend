@@ -23,6 +23,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>آزمون‌یار احمدی - نسخه جامع، دقیق و تاریخ‌دار</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135695.png">
     <style>
         :root {
             --primary: #2563eb;
@@ -69,17 +72,21 @@
         th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
         th { background: var(--primary-soft); color: var(--primary); }
         input, select, textarea { padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; }
+        .search-box { flex: 1; min-width: 200px; }
 
         #timer-box { font-size: 3rem; text-align: center; margin: 20px 0; font-family: monospace; color: var(--primary); direction: ltr; }
         .wheel-box { text-align: center; padding: 40px 0; }
         #winner-name { font-size: 2rem; color: var(--primary); margin: 20px 0; min-height: 40px; font-weight: bold; }
         .seating-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; }
-        .desk { aspect-ratio: 1; background: var(--card-bg); border: 2px dashed var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.85rem; padding: 5px; box-shadow: var(--shadow); }
+        .desk { aspect-ratio: 1; background: var(--card-bg); border: 2px dashed var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.85rem; padding: 5px; box-shadow: var(--shadow); flex-direction: column; }
 
-        .leaderboard-item { display: flex; justify-content: space-between; padding: 15px; background: var(--primary-soft); margin-bottom: 10px; border-radius: 8px; font-weight: bold; font-size: 1.1em; border: 1px solid var(--primary); }
+        .leaderboard-item { display: flex; justify-content: space-between; padding: 15px; background: var(--primary-soft); margin-bottom: 10px; border-radius: 8px; font-weight: bold; font-size: 1.1em; border: 1px solid var(--primary); align-items: center; }
         .leaderboard-item:nth-child(1) { background: #fef08a; border-color: #eab308; color: #854d0e; }
         .leaderboard-item:nth-child(2) { background: #e2e8f0; border-color: #94a3b8; color: #334155; }
         .leaderboard-item:nth-child(3) { background: #fed7aa; border-color: #f97316; color: #9a3412; }
+
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; opacity: 0; transition: opacity 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; }
 
         @media print {
             .nav, .tabs, .no-print { display: none !important; }
@@ -98,36 +105,63 @@
 <body data-theme="blue">
 
 <div class="nav">
-    <span>💎 آزمون‌یار احمدی (نسخه کامل)</span>
+    <span>💎 آزمون‌یار احمدی (هوشمند)</span>
     <span id="nav-date" style="font-size: 0.9em; opacity: 0.9;"></span>
 </div>
 
 <div class="container">
     <div class="tabs no-print">
         <button class="tab-btn active" onclick="openTab('list')">👥 امتیازدهی</button>
-        <button class="tab-btn" onclick="openTab('leaderboard')">🏆 برترین‌ها</button>
-        <button class="tab-btn" onclick="openTab('exams')">📊 نمرات (تاریخ‌دار)</button>
-        <button class="tab-btn" onclick="openTab('homework')">📚 تکالیف</button>
+        <button class="tab-btn" onclick="openTab('exams')">📊 نمرات (ویرایش سریع)</button>
         <button class="tab-btn" onclick="openTab('attendance')">📋 حضورغیاب</button>
+        <button class="tab-btn" onclick="openTab('homework')">📚 تکالیف</button>
+        <button class="tab-btn" onclick="openTab('manage')">⚙️ مدیریت لیست</button>
+        <button class="tab-btn" onclick="openTab('leaderboard')">🏆 برترین‌ها</button>
         <button class="tab-btn" onclick="openTab('notes')">📌 یادداشت</button>
         <button class="tab-btn" onclick="openTab('draw')">🎲 گردونه</button>
         <button class="tab-btn" onclick="openTab('timer')">⏱️ تایمر</button>
         <button class="tab-btn" onclick="openTab('seat')">🪑 چیدمان</button>
         <button class="tab-btn" onclick="openTab('print')">📄 چاپ کاربرگ</button>
         <button class="tab-btn" onclick="openTab('online')">🌐 کلاس آنلاین</button>
-        <button class="tab-btn" onclick="openTab('config')">⚙️ تنظیمات</button>
+        <button class="tab-btn" onclick="openTab('config')">⚙️ تنظیمات اپ</button>
     </div>
 
     <!-- لیست و امتیاز -->
     <div id="tab-list" class="tab-content" style="display:block">
         <div class="card">
-            <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+            <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <select id="classToggleList" onchange="renderList()" class="btn-outline">
                     <option value="A">ششم الف</option><option value="B">ششم ب</option>
                 </select>
-                <button class="btn btn-main" onclick="alert('تغییرات ذخیره شد.')">💾 ذخیره امتیازات</button>
+                <input type="text" id="search-list" class="search-box" placeholder="🔍 جستجوی نام دانش‌آموز..." onkeyup="renderList()">
+                <button class="btn btn-main" onclick="showToast('تغییرات امتیازات به صورت خودکار ذخیره می‌شوند.')">ذخیره خودکار فعاله ✔️</button>
             </div>
             <div id="student-list-container"></div>
+        </div>
+    </div>
+
+    <!-- مدیریت دانش‌آموزان -->
+    <div id="tab-manage" class="tab-content">
+        <div class="card">
+            <h3>اضافه و حذف دانش‌آموزان</h3>
+            <p style="font-size:0.9em; color:gray;">دانش‌آموز جدید اضافه کنید یا افراد قبلی را حذف کنید. این تغییرات در تمام بخش‌ها اعمال می‌شود.</p>
+            <select id="manage-cls" onchange="renderManageList()" class="btn-outline" style="margin-bottom:15px;">
+                <option value="A">ششم الف</option><option value="B">ششم ب</option>
+            </select>
+            
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; background:var(--primary-soft); padding:15px; border-radius:10px; align-items:center;">
+                <input type="text" id="new-stu-name" placeholder="نام و نام خانوادگی (مثلاً: احمدی علی)" style="flex:1; min-width:150px;">
+                <input type="text" id="new-stu-father" placeholder="نام پدر" style="width:120px;">
+                <input type="number" id="new-stu-id" placeholder="کد دانش‌آموزی (اختیاری)" style="width:150px;">
+                <button class="btn btn-main" onclick="addStudent()">➕ افزودن</button>
+            </div>
+            
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>ردیف</th><th>مشخصات دانش‌آموز</th><th>کد ملی</th><th>عملیات</th></tr></thead>
+                    <tbody id="manage-tbody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -147,13 +181,13 @@
     <!-- آزمون‌ها و نمرات تاریخ‌دار -->
     <div id="tab-exams" class="tab-content">
         <div class="card">
-            <h3>ثبت نمرات و ارزشیابی توصیفی (کاملا ذخیره‌دار)</h3>
-            <p style="font-size:0.9em; color:gray;">یک بار لیست آزمون را در تاریخ دلخواه بسازید و برای همیشه در حافظه خواهد ماند.</p>
+            <h3>ثبت و ویرایش خودکار نمرات</h3>
+            <p style="font-size:0.9em; color:gray;">هر چیزی که در کادر نمره بنویسید (عددی یا توصیفی)، همان لحظه ذخیره می‌شود و نیاز به کلیک اضافه نیست!</p>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; background:var(--primary-soft); padding:15px; border-radius:10px;">
                 <select id="exam-cls" onchange="renderExamList()" class="btn-outline"><option value="A">ششم الف</option><option value="B">ششم ب</option></select>
                 <input type="text" id="exam-date" style="width: 110px; text-align: center;" placeholder="تاریخ (مثل ۱۴۰۲/۰۸/۲۴)">
-                <input type="text" id="exam-title" placeholder="عنوان آزمون یا پرسش (مثل: ریاضی فصل ۱)" style="flex:1">
-                <button class="btn btn-main" onclick="createExam()">➕ ایجاد لیست</button>
+                <input type="text" id="exam-title" placeholder="عنوان آزمون (مثلاً ریاضی فصل ۱)" style="flex:1">
+                <button class="btn btn-main" onclick="createExam()">➕ ایجاد لیست جدید</button>
             </div>
             
             <hr style="border-color:var(--border); margin:20px 0;">
@@ -163,14 +197,13 @@
             <!-- بخش ورود نمرات -->
             <div id="exam-details" style="display:none; overflow-x:auto; border:1px solid var(--border); padding:15px; border-radius:10px; background:var(--bg);">
                 <h3 id="current-exam-title" style="color:var(--primary); text-align:center;"></h3>
-                <p style="text-align:center; font-size:0.85em; color:gray;">نمره یا توصیف را وارد کنید. برای ارسال به ولی، حتما اول ذخیره را بزنید.</p>
+                <p style="text-align:center; font-size:0.85em; color:green;">نمره وارد شده بی‌درنگ ذخیره می‌شود. لینک واتساپ نیز خودکار فعال می‌شود.</p>
                 <table>
-                    <thead><tr><th>نام دانش‌آموز</th><th>نمره / ارزشیابی</th><th>اطلاع به والدین</th></tr></thead>
+                    <thead><tr><th>نام دانش‌آموز</th><th>نمره / ارزشیابی</th><th>ارسال به اولیا</th></tr></thead>
                     <tbody id="exam-tbody"></tbody>
                 </table>
                 <br>
-                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                    <button class="btn btn-success" onclick="saveExamScores()">💾 ذخیره نمرات این لیست</button>
+                <div style="display:flex; justify-content:flex-end;">
                     <button class="btn btn-danger" onclick="deleteExam()">🗑️ حذف کل این لیست</button>
                 </div>
             </div>
@@ -180,18 +213,17 @@
     <!-- بررسی تکالیف -->
     <div id="tab-homework" class="tab-content">
         <div class="card">
-            <h3>بررسی تکالیف (تاریخ‌دار)</h3>
-            <p style="font-size:0.9em; color:gray;">برای دیدن تکالیف روزهای قبل، کافیست تاریخ را به صورت دستی تغییر دهید و روی صفحه کلیک کنید.</p>
+            <h3>تکالیف (ذخیره لحظه‌ای)</h3>
+            <p style="font-size:0.9em; color:gray;">وضعیت را تغییر دهید؛ همان لحظه ذخیره و ویرایش می‌شود.</p>
             <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <select id="classToggleHW" onchange="renderHomework()" class="btn-outline">
                     <option value="A">ششم الف</option><option value="B">ششم ب</option>
                 </select>
                 <input type="text" id="hw-date" style="width: 120px; text-align: center;" onchange="renderHomework()" placeholder="تاریخ">
-                <button class="btn btn-main" onclick="saveHomework()">💾 ذخیره تکالیف این تاریخ</button>
             </div>
             <div style="overflow-x:auto;">
                 <table>
-                    <thead><tr><th>نام دانش‌آموز</th><th>وضعیت تکلیف</th><th>توضیحات معلم</th></tr></thead>
+                    <thead><tr><th>مشخصات دانش‌آموز</th><th>وضعیت تکلیف</th><th>توضیحات معلم</th></tr></thead>
                     <tbody id="hw-tbody"></tbody>
                 </table>
             </div>
@@ -201,18 +233,17 @@
     <!-- حضور و غیاب -->
     <div id="tab-attendance" class="tab-content">
         <div class="card">
-            <h3>حضور و غیاب روزانه (تاریخ‌دار)</h3>
-            <p style="font-size:0.9em; color:gray;">با تغییر دادن تاریخ در کادر زیر، لیست غایبینِ دقیقاً همان روز به شما نشان داده می‌شود!</p>
+            <h3>حضور و غیاب روزانه (ویرایش و ذخیره آنی)</h3>
+            <p style="font-size:0.9em; color:gray;">لیست را چک کنید. هر تغییری بدهید همان لحظه برای این تاریخ ذخیره می‌شود.</p>
             <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <select id="classToggleAtt" onchange="renderAttendance()" class="btn-outline">
                     <option value="A">ششم الف</option><option value="B">ششم ب</option>
                 </select>
                 <input type="text" id="att-date" style="width: 120px; text-align: center;" onchange="renderAttendance()" placeholder="تاریخ">
-                <button class="btn btn-main" onclick="saveAttendance()">💾 ذخیره حاضری این تاریخ</button>
             </div>
             <div style="overflow-x:auto;">
                 <table>
-                    <thead><tr><th>نام دانش‌آموز</th><th>وضعیت</th><th>توضیحات (مثل: بیمار)</th></tr></thead>
+                    <thead><tr><th>مشخصات دانش‌آموز</th><th>وضعیت حضور</th><th>توضیحات (مثل: بیمار)</th></tr></thead>
                     <tbody id="att-tbody"></tbody>
                 </table>
             </div>
@@ -295,9 +326,9 @@
             </div>
         </div>
         <div class="card">
-            <h3>💾 خروجی اطلاعات</h3>
-            <button class="btn btn-outline" onclick="exportExcel()">دانلود فایل اکسل امتیازات</button>
-            <button class="btn btn-outline" onclick="saveBackup()">پشتیبان‌گیری کامل داده‌ها (JSON)</button>
+            <h3>💾 خروجی اطلاعات پیشرفته</h3>
+            <button class="btn btn-outline" onclick="exportExcel()">📊 دانلود فایل اکسل (همه کلاس‌ها)</button>
+            <button class="btn btn-outline" onclick="saveBackup()">💾 پشتیبان‌گیری کامل داده‌ها</button>
         </div>
     </div>
 
@@ -349,8 +380,11 @@
     </div>
 </div>
 
+<div id="toast">✅ ذخیره شد</div>
+
 <script>
-    const studentsA = [
+    // داده‌های پیش‌فرض برای اجرای اول
+    const defaultStudentsA = [
         {id:'3430627419', f:'علی', n:'آبخیز عامر'}, {id:'3430612330', f:'حسین', n:'احمدی عبدالله'},
         {id:'3430573777', f:'عبداله', n:'باورداثی بنیامین'}, {id:'3430625858', f:'احمد', n:'باورداثی علی'},
         {id:'3480424880', f:'ناصر', n:'بشری محمد'}, {id:'5250740812', f:'داود', n:'بلوچی سدیس'},
@@ -365,7 +399,7 @@
         {id:'3430635136', f:'حسین', n:'محمودی مرد علی'}, {id:'3430612578', f:'ناصر', n:'مؤمنی محمد'}
     ];
 
-    const studentsB = [
+    const defaultStudentsB = [
         {id:'6490140330', f:'بهروز', n:'برازنده امیرمحمد'}, {id:'3430632544', f:'خالد', n:'تن زده ثامر'},
         {id:'3430614732', f:'ابراهیم', n:'تن زده طاها'}, {id:'3430634873', f:'فرید', n:'جاسمی امین'},
         {id:'3430629500', f:'یوسف', n:'جان فزا امین'}, {id:'3430601886', f:'حسین', n:'جان فزا بنیامین'},
@@ -381,15 +415,27 @@
     ];
 
     let state = JSON.parse(localStorage.getItem('azmoonyar_mega')) || { 
-        scores: {}, theme: 'blue', onlineLink: '', notes: '', exams: [], attendance: {}, homework: {} 
+        scores: {}, theme: 'blue', onlineLink: '', notes: '', exams: [], attendance: {}, homework: {}, students: null 
     };
+    
+    // اگر لیست دانش‌آموزان در سیستم وجود نداشت، لیست پیش‌فرض را بارگذاری کن
+    if(!state.students) state.students = { A: defaultStudentsA, B: defaultStudentsB };
     if(!state.exams) state.exams = [];
     if(!state.attendance) state.attendance = {};
     if(!state.homework) state.homework = {};
     
     let currentExamId = null;
+    let toastTimeout;
 
     function save() { localStorage.setItem('azmoonyar_mega', JSON.stringify(state)); }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg || '✅ تغییرات ذخیره شد';
+        toast.className = "show";
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2000);
+    }
 
     function getShamsiDate() {
         return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
@@ -421,15 +467,26 @@
         if(tabId === 'exams') renderExamList();
         if(tabId === 'seat') renderSeating();
         if(tabId === 'print') renderPrintTable();
+        if(tabId === 'manage') renderManageList();
     }
 
     function changeTheme(tName) { document.body.setAttribute('data-theme', tName); state.theme = tName; save(); }
 
+    // ====== بخش لیست و امتیازدهی ======
     function renderList() {
-        const list = document.getElementById('classToggleList').value === 'A' ? studentsA : studentsB;
+        const cls = document.getElementById('classToggleList').value;
+        let list = state.students[cls];
+        const q = document.getElementById('search-list').value.trim();
+        if(q) {
+            list = list.filter(s => s.n.includes(q) || s.f.includes(q));
+        }
+
         document.getElementById('student-list-container').innerHTML = list.map(s => `
             <div class="student-row">
-                <div style="min-width:200px;"><strong>${s.n}</strong> <span style="font-size:0.8em; color:gray">(${s.f})</span></div>
+                <div style="min-width:200px;">
+                    <div style="font-weight:bold; font-size:1.1em; margin-bottom:4px;">${s.n}</div>
+                    <div style="font-size:0.85em; color:gray">پدر: ${s.f}</div>
+                </div>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <button class="btn btn-outline" style="padding:5px 10px;" onclick="updateScore('${s.n}', -1)">-</button>
                     <strong style="width:25px; text-align:center; font-size:1.2em;">${state.scores[s.n] || 0}</strong>
@@ -438,16 +495,68 @@
             </div>
         `).join('');
     }
-    function updateScore(name, delta) { state.scores[name] = (state.scores[name]||0)+delta; save(); renderList(); }
+    function updateScore(name, delta) { 
+        state.scores[name] = (state.scores[name]||0)+delta; 
+        save(); 
+        showToast(`امتیاز ${name} ذخیره شد`); 
+        renderList(); 
+    }
+
+    // ====== مدیریت دانش‌آموزان ======
+    function renderManageList() {
+        const cls = document.getElementById('manage-cls').value;
+        const list = state.students[cls];
+        document.getElementById('manage-tbody').innerHTML = list.map((s, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>
+                    <div style="font-weight:bold">${s.n}</div>
+                    <div style="font-size:0.8em;color:gray;margin-top:2px;">پدر: ${s.f}</div>
+                </td>
+                <td style="font-family:Arial; direction:ltr;">${s.id}</td>
+                <td><button class="btn btn-danger" style="padding:5px 10px; font-size:12px;" onclick="removeStudent('${cls}', '${s.id}')">🗑️ حذف</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function addStudent() {
+        const cls = document.getElementById('manage-cls').value;
+        const n = document.getElementById('new-stu-name').value.trim();
+        const f = document.getElementById('new-stu-father').value.trim();
+        let id = document.getElementById('new-stu-id').value.trim();
+        
+        if(!n) return alert('نام دانش‌آموز الزامی است.');
+        if(!f) return alert('نام پدر را وارد کنید.');
+        if(!id) id = Math.floor(Math.random() * 10000000000).toString(); // تولید شناسه در صورت خالی بودن
+
+        state.students[cls].push({id, f, n});
+        save();
+        renderManageList();
+        document.getElementById('new-stu-name').value = '';
+        document.getElementById('new-stu-father').value = '';
+        document.getElementById('new-stu-id').value = '';
+        showToast('✅ دانش‌آموز جدید اضافه شد');
+    }
+
+    function removeStudent(cls, id) {
+        if(!confirm('آیا از حذف این دانش‌آموز مطمئن هستید؟ (نمرات و اطلاعاتش پاک می‌شود)')) return;
+        state.students[cls] = state.students[cls].filter(s => s.id !== id);
+        save();
+        renderManageList();
+        showToast('🗑️ با موفقیت حذف شد');
+    }
 
     // ====== برترین‌ها ======
     function renderLeaderboard() {
         const cls = document.getElementById('classToggleLeader').value;
-        const list = cls === 'A' ? studentsA : studentsB;
-        let sorted = list.map(s => ({n: s.n, score: state.scores[s.n] || 0})).sort((a,b) => b.score - a.score).slice(0, 5);
+        const list = state.students[cls];
+        let sorted = list.map(s => ({n: s.n, f: s.f, score: state.scores[s.n] || 0})).sort((a,b) => b.score - a.score).slice(0, 5);
         document.getElementById('leaderboard-container').innerHTML = sorted.map((s, i) => `
             <div class="leaderboard-item">
-                <span>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🏅'} ${s.n}</span>
+                <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                    <span>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🏅'} ${s.n}</span>
+                    <span style="font-size:0.7em; color:gray; font-weight:normal; margin-right:25px;">پدر: ${s.f}</span>
+                </div>
                 <span>${s.score} امتیاز</span>
             </div>
         `).join('');
@@ -493,34 +602,53 @@
         document.getElementById('exam-details').style.display = 'block';
         document.getElementById('current-exam-title').innerText = `آزمون: ${exam.title} (${exam.date})`;
         
-        const list = exam.cls === 'A' ? studentsA : studentsB;
+        const list = state.students[exam.cls];
         document.getElementById('exam-tbody').innerHTML = list.map(s => {
             const val = exam.scores[s.n] || '';
             const msg = encodeURIComponent(`با سلام، نمره/ارزشیابی دانش‌آموز ${s.n} در درس/آزمون "${exam.title}" تاریخ ${exam.date} برابر است با: ${val}\nمعلم: ایوب احمدی`);
             const waLink = `https://wa.me/?text=${msg}`;
             return `
             <tr>
-                <td>${s.n}</td>
-                <td><input type="text" id="score_${s.id}" value="${val}" placeholder="نمره یا توصیف" style="width:100px; text-align:center;"></td>
+                <td><div style="font-weight:bold">${s.n}</div><div style="font-size:0.8em;color:gray;margin-top:2px;">پدر: ${s.f}</div></td>
+                <td><input type="text" id="score_${s.id}" value="${val}" placeholder="نمره یا توصیف" style="width:100px; text-align:center;" onkeyup="saveExamScores('${s.id}')"></td>
                 <td>
-                    ${val ? `<a href="${waLink}" target="_blank" class="btn btn-success" style="text-decoration:none; display:inline-block; font-size:12px;">💬 ارسال به ولی</a>` : '<span style="color:gray; font-size:12px">اول نمره را ذخیره کنید</span>'}
+                    <a id="wa_${s.id}" ${val ? `href="${waLink}"` : ''} target="_blank" class="btn ${val ? 'btn-success' : 'btn-outline'}" style="text-decoration:none; display:inline-block; font-size:12px; pointer-events: ${val ? 'auto' : 'none'};">
+                        ${val ? '💬 ارسال به ولی' : 'نمره وارد نشده'}
+                    </a>
                 </td>
             </tr>`;
         }).join('');
     }
 
-    function saveExamScores() {
+    function saveExamScores(studentId) {
         if(!currentExamId) return;
         const exam = state.exams.find(e => e.id === currentExamId);
-        const list = exam.cls === 'A' ? studentsA : studentsB;
+        const list = state.students[exam.cls];
         
+        // Update all values silently
         list.forEach(s => {
             const val = document.getElementById(`score_${s.id}`).value;
             exam.scores[s.n] = val;
+            
+            // Live update the whatsapp link for this specific row
+            const waBtn = document.getElementById(`wa_${s.id}`);
+            if(waBtn) {
+                if(val) {
+                    const msg = encodeURIComponent(`با سلام، نمره/ارزشیابی دانش‌آموز ${s.n} در درس/آزمون "${exam.title}" تاریخ ${exam.date} برابر است با: ${val}\nمعلم: ایوب احمدی`);
+                    waBtn.href = `https://wa.me/?text=${msg}`;
+                    waBtn.innerHTML = '💬 ارسال به ولی';
+                    waBtn.className = 'btn btn-success';
+                    waBtn.style.pointerEvents = 'auto';
+                } else {
+                    waBtn.removeAttribute('href');
+                    waBtn.innerHTML = 'نمره وارد نشده';
+                    waBtn.className = 'btn btn-outline';
+                    waBtn.style.pointerEvents = 'none';
+                }
+            }
         });
         save();
-        alert('نمرات با موفقیت ذخیره شد.');
-        openExam(currentExamId); // Refresh to update whatsapp links
+        showToast('نمرات خودکار ذخیره شد');
     }
 
     function deleteExam() {
@@ -534,7 +662,7 @@
     function renderHomework() {
         const cls = document.getElementById('classToggleHW').value;
         const date = document.getElementById('hw-date').value;
-        const list = cls === 'A' ? studentsA : studentsB;
+        const list = state.students[cls];
         
         if(!state.homework[date]) state.homework[date] = {};
         const hwDay = state.homework[date];
@@ -543,15 +671,15 @@
             const stat = hwDay[s.n]?.s || 'انجام داده';
             const desc = hwDay[s.n]?.d || '';
             return `<tr>
-                <td>${s.n}</td>
+                <td><div style="font-weight:bold">${s.n}</div><div style="font-size:0.8em;color:gray;margin-top:2px;">پدر: ${s.f}</div></td>
                 <td>
-                    <select id="hw_s_${s.id}">
+                    <select id="hw_s_${s.id}" onchange="saveHomework()">
                         <option value="انجام داده" ${stat==='انجام داده'?'selected':''}>انجام داده 🟢</option>
                         <option value="ناقص" ${stat==='ناقص'?'selected':''}>ناقص 🟡</option>
                         <option value="انجام نداده" ${stat==='انجام نداده'?'selected':''}>انجام نداده 🔴</option>
                     </select>
                 </td>
-                <td><input type="text" id="hw_d_${s.id}" value="${desc}" placeholder="توضیح"></td>
+                <td><input type="text" id="hw_d_${s.id}" value="${desc}" placeholder="توضیح" onkeyup="saveHomework()"></td>
             </tr>`;
         }).join('');
     }
@@ -559,7 +687,7 @@
     function saveHomework() {
         const date = document.getElementById('hw-date').value;
         const cls = document.getElementById('classToggleHW').value;
-        const list = cls === 'A' ? studentsA : studentsB;
+        const list = state.students[cls];
         
         if(!state.homework[date]) state.homework[date] = {};
         list.forEach(s => {
@@ -569,14 +697,14 @@
             };
         });
         save();
-        alert('تکالیف این تاریخ ذخیره شد.');
+        showToast('وضعیت تکالیف خودکار ذخیره شد');
     }
 
     // ====== حضور غیاب ======
     function renderAttendance() {
         const cls = document.getElementById('classToggleAtt').value;
         const date = document.getElementById('att-date').value;
-        const list = cls === 'A' ? studentsA : studentsB;
+        const list = state.students[cls];
         
         if(!state.attendance[date]) state.attendance[date] = {};
         const attDay = state.attendance[date];
@@ -585,15 +713,15 @@
             const stat = attDay[s.n]?.s || 'حاضر';
             const desc = attDay[s.n]?.d || '';
             return `<tr>
-                <td>${s.n}</td>
+                <td><div style="font-weight:bold">${s.n}</div><div style="font-size:0.8em;color:gray;margin-top:2px;">پدر: ${s.f}</div></td>
                 <td>
-                    <select id="att_s_${s.id}">
+                    <select id="att_s_${s.id}" onchange="saveAttendance()">
                         <option value="حاضر" ${stat==='حاضر'?'selected':''}>حاضر ✅</option>
                         <option value="غایب" ${stat==='غایب'?'selected':''}>غایب ❌</option>
                         <option value="موجه" ${stat==='موجه'?'selected':''}>موجه ⭕</option>
                     </select>
                 </td>
-                <td><input type="text" id="att_d_${s.id}" value="${desc}" placeholder="مثلا: بیمار"></td>
+                <td><input type="text" id="att_d_${s.id}" value="${desc}" placeholder="مثلا: بیمار" onkeyup="saveAttendance()"></td>
             </tr>`;
         }).join('');
     }
@@ -601,7 +729,7 @@
     function saveAttendance() {
         const date = document.getElementById('att-date').value;
         const cls = document.getElementById('classToggleAtt').value;
-        const list = cls === 'A' ? studentsA : studentsB;
+        const list = state.students[cls];
         
         if(!state.attendance[date]) state.attendance[date] = {};
         list.forEach(s => {
@@ -611,7 +739,7 @@
             };
         });
         save();
-        alert('حاضری این تاریخ ذخیره شد.');
+        showToast('لیست حضورغیاب خودکار بروزرسانی شد');
     }
 
     // ====== یادداشت ======
@@ -623,11 +751,12 @@
     // ====== گردونه ======
     function spinWheel() {
         const cls = document.getElementById('classToggleDraw').value;
-        const list = cls === 'A' ? studentsA : studentsB;
+        const list = state.students[cls];
+        if (list.length === 0) return alert('لیست دانش‌آموزان خالی است.');
         let counter = 0;
         const interval = setInterval(() => {
             const random = list[Math.floor(Math.random() * list.length)];
-            document.getElementById('winner-name').innerText = random.n;
+            document.getElementById('winner-name').innerHTML = `${random.n}<br><span style="font-size:0.5em;color:gray;">پدر: ${random.f}</span>`;
             counter++;
             if(counter > 20) {
                 clearInterval(interval);
@@ -660,16 +789,21 @@
     // ====== چیدمان ======
     function renderSeating() {
         const cls = document.getElementById('classToggleSeat').value;
-        let list = [...(cls === 'A' ? studentsA : studentsB)];
+        let list = [...state.students[cls]];
         list = list.sort(() => Math.random() - 0.5);
-        document.getElementById('seating-map').innerHTML = list.map(s => `<div class="desk">${s.n}</div>`).join('');
+        document.getElementById('seating-map').innerHTML = list.map(s => `
+            <div class="desk">
+                <strong>${s.n}</strong>
+                <span style="font-size:0.7em; color:gray">پدر: ${s.f}</span>
+            </div>
+        `).join('');
     }
 
     // ====== آنلاین ======
     function saveOnlineLink() {
         state.onlineLink = document.getElementById('online-link').value;
         save();
-        alert('لینک ذخیره شد.');
+        showToast('لینک ذخیره شد');
     }
     function openOnlineClass() {
         if(state.onlineLink) window.open(state.onlineLink, '_blank');
@@ -679,7 +813,7 @@
     // ====== چاپ ======
     function renderPrintTable() {
         const cls = document.getElementById('classTogglePrint').value;
-        const list = cls === 'A' ? studentsA : studentsB;
+        const list = state.students[cls];
         
         document.getElementById('p-subj').innerText = document.getElementById('subjectName').value || '---';
         document.getElementById('p-cls').innerText = cls === 'A' ? 'ششم الف' : 'ششم ب';
@@ -698,15 +832,31 @@
     }
 
     function exportExcel() {
-        let csv = "\ufeffنام دانش آموز,امتیاز\n";
-        Object.keys(state.scores).forEach(n => csv += `${n},${state.scores[n]}\n`);
+        let csv = "\ufeffکلاس,نام دانش آموز,نام پدر,کد ملی,امتیاز\n";
+        ['A', 'B'].forEach(cls => {
+            let className = cls === 'A' ? 'ششم الف' : 'ششم ب';
+            state.students[cls].forEach(s => {
+                let score = state.scores[s.n] || 0;
+                csv += `${className},${s.n},${s.f},${s.id},${score}\n`;
+            });
+        });
         const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
-        a.download = "Scores.csv"; a.click();
+        a.download = "Scores_Report.csv"; a.click();
     }
     
     function saveBackup() {
         const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(state)], {type: 'application/json'}));
         a.download = "Azmoonyar_Backup.json"; a.click();
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                console.log('Service Worker registered', reg);
+            }).catch(err => {
+                console.log('Service Worker registration failed', err);
+            });
+        });
     }
 </script>
 </body>
