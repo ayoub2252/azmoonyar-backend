@@ -1,9 +1,28 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
+<link data-athena-runtime rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
+<script data-athena-runtime src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+<script data-athena-runtime src="https://cdn.jsdelivr.net/npm/tone@15.0.4/build/Tone.js"></script>
+<script data-athena-runtime src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+<script data-athena-runtime>window.tailwind = { config: { corePlugins: { preflight: false } } };</script>
+<script data-athena-runtime src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script data-athena-runtime src="https://cdn.jsdelivr.net/npm/lucide@0.462.0/dist/umd/lucide.min.js"></script>
+<script data-athena-runtime>
+(function () {
+  var draw = function () { if (window.lucide && window.lucide.createIcons) { window.lucide.createIcons(); } };
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', draw); } else { draw(); }
+  /* Re-render on inserted nodes, debounced, so dynamic UI keeps its icons. */
+  var pending = null;
+  new MutationObserver(function () {
+    if (pending) { return; }
+    pending = setTimeout(function () { pending = null; draw(); }, 60);
+  }).observe(document.documentElement, { childList: true, subtree: true });
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>آزمون‌یار احمدی - نسخه VIP</title>
+    <title>آزمون‌یار احمدی - نسخه جامع، دقیق و تاریخ‌دار</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -15,7 +34,6 @@
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
 
-        /* تم‌های رنگی */
         [data-theme="green"] { --primary: #16a34a; --primary-soft: #f0fdf4; }
         [data-theme="purple"] { --primary: #9333ea; --primary-soft: #faf5ff; }
         [data-theme="red"] { --primary: #dc2626; --primary-soft: #fef2f2; }
@@ -33,36 +51,46 @@
         .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; }
         .tab-btn { background: var(--card-bg); border: 1px solid var(--border); padding: 10px 18px; border-radius: 10px; cursor: pointer; color: var(--text); white-space: nowrap; font-weight: bold; transition: 0.2s; }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); }
+        .tab-content { display: none; }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 20px; }
         
-        /* دکمه‌ها */
         .btn { border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; transition: 0.2s; font-weight: bold; }
         .btn-main { background: var(--primary); color: white; }
         .btn-main:hover { opacity: 0.9; transform: scale(1.02); }
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-success { background: #16a34a; color: white; }
+        .btn-danger { background: #dc2626; color: white; }
 
         .student-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); transition: 0.2s; flex-wrap: wrap; gap: 10px; }
         .student-row:hover { background: var(--primary-soft); }
 
-        /* ابزارها */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+        th { background: var(--primary-soft); color: var(--primary); }
+        input, select, textarea { padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-family: inherit; }
+
         #timer-box { font-size: 3rem; text-align: center; margin: 20px 0; font-family: monospace; color: var(--primary); direction: ltr; }
         .wheel-box { text-align: center; padding: 40px 0; }
         #winner-name { font-size: 2rem; color: var(--primary); margin: 20px 0; min-height: 40px; font-weight: bold; }
-
         .seating-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; }
         .desk { aspect-ratio: 1; background: var(--card-bg); border: 2px dashed var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.85rem; padding: 5px; box-shadow: var(--shadow); }
 
-        /* استایل چاپ */
+        .leaderboard-item { display: flex; justify-content: space-between; padding: 15px; background: var(--primary-soft); margin-bottom: 10px; border-radius: 8px; font-weight: bold; font-size: 1.1em; border: 1px solid var(--primary); }
+        .leaderboard-item:nth-child(1) { background: #fef08a; border-color: #eab308; color: #854d0e; }
+        .leaderboard-item:nth-child(2) { background: #e2e8f0; border-color: #94a3b8; color: #334155; }
+        .leaderboard-item:nth-child(3) { background: #fed7aa; border-color: #f97316; color: #9a3412; }
+
         @media print {
             .nav, .tabs, .no-print { display: none !important; }
             body { background: white; color: black; margin: 0; padding: 0; }
-            .card { box-shadow: none; border: none; padding: 0; }
+            .card { box-shadow: none; border: none; padding: 0; margin: 0; }
             .official-form { display: block !important; width: 100%; direction: rtl; }
             .official-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-            .official-table th, .official-table td { border: 1px solid black; padding: 6px; text-align: center; font-size: 12px; }
-            .official-table th { background-color: #f0f0f0 !important; }
-            .header-print { display: flex; justify-content: space-between; border: 1px solid black; padding: 10px; font-size: 13px; }
+            .official-table th, .official-table td { border: 1px solid #ddd; padding: 4px; text-align: center; font-size: 11px; }
+            .official-table th { background-color: #f2f2f2 !important; color: black; }
+            .header-print { display: flex; justify-content: space-between; padding: 10px; font-size: 12px; margin-bottom: 5px; background: #f2fbd6; border: 1px solid #ddd; border-radius: 5px; }
+            .sub-header-print { display: flex; justify-content: space-between; padding: 5px; font-size: 12px; background: #f2fbd6; border: 1px solid #ddd; border-radius: 5px; width: 40%; margin-right: auto; margin-bottom: 10px; }
         }
         .official-form { display: none; }
     </style>
@@ -70,51 +98,155 @@
 <body data-theme="blue">
 
 <div class="nav">
-    <span>💎 آزمون‌یار احمدی</span>
-    <span id="header-class">کلاس ششم الف</span>
+    <span>💎 آزمون‌یار احمدی (نسخه کامل)</span>
+    <span id="nav-date" style="font-size: 0.9em; opacity: 0.9;"></span>
 </div>
 
 <div class="container">
     <div class="tabs no-print">
-        <button class="tab-btn active" onclick="openTab('list')">👥 لیست کلاس</button>
-        <button class="tab-btn" onclick="openTab('draw')">🎲 گردونه شانس</button>
-        <button class="tab-btn" onclick="openTab('timer')">⏱️ تایمر آزمون</button>
+        <button class="tab-btn active" onclick="openTab('list')">👥 امتیازدهی</button>
+        <button class="tab-btn" onclick="openTab('leaderboard')">🏆 برترین‌ها</button>
+        <button class="tab-btn" onclick="openTab('exams')">📊 نمرات (تاریخ‌دار)</button>
+        <button class="tab-btn" onclick="openTab('homework')">📚 تکالیف</button>
+        <button class="tab-btn" onclick="openTab('attendance')">📋 حضورغیاب</button>
+        <button class="tab-btn" onclick="openTab('notes')">📌 یادداشت</button>
+        <button class="tab-btn" onclick="openTab('draw')">🎲 گردونه</button>
+        <button class="tab-btn" onclick="openTab('timer')">⏱️ تایمر</button>
         <button class="tab-btn" onclick="openTab('seat')">🪑 چیدمان</button>
         <button class="tab-btn" onclick="openTab('print')">📄 چاپ کاربرگ</button>
-        <button class="tab-btn" onclick="openTab('config')">⚙️ تنظیمات رنگ</button>
+        <button class="tab-btn" onclick="openTab('online')">🌐 کلاس آنلاین</button>
+        <button class="tab-btn" onclick="openTab('config')">⚙️ تنظیمات</button>
     </div>
 
-    <!-- لیست و نمره -->
-    <div id="tab-list" class="tab-content">
+    <!-- لیست و امتیاز -->
+    <div id="tab-list" class="tab-content" style="display:block">
         <div class="card">
             <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-                <select id="classToggle" onchange="renderStudents()" class="btn-outline" style="padding:8px; border-radius: 8px; font-family: inherit;">
-                    <option value="A">ششم الف (۲۴ نفر)</option>
-                    <option value="B">ششم ب (۲۴ نفر)</option>
+                <select id="classToggleList" onchange="renderList()" class="btn-outline">
+                    <option value="A">ششم الف</option><option value="B">ششم ب</option>
                 </select>
-                <button class="btn btn-main" onclick="alert('تغییرات ذخیره شد.')">💾 ذخیره</button>
+                <button class="btn btn-main" onclick="alert('تغییرات ذخیره شد.')">💾 ذخیره امتیازات</button>
             </div>
-            <div id="student-container"></div>
+            <div id="student-list-container"></div>
+        </div>
+    </div>
+
+    <!-- برترین‌های کلاس -->
+    <div id="tab-leaderboard" class="tab-content">
+        <div class="card">
+            <h3 style="text-align: center; color: var(--primary);">🏆 ستارگان کلاس (بیشترین امتیاز)</h3>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <select id="classToggleLeader" onchange="renderLeaderboard()" class="btn-outline">
+                    <option value="A">ششم الف</option><option value="B">ششم ب</option>
+                </select>
+            </div>
+            <div id="leaderboard-container"></div>
+        </div>
+    </div>
+
+    <!-- آزمون‌ها و نمرات تاریخ‌دار -->
+    <div id="tab-exams" class="tab-content">
+        <div class="card">
+            <h3>ثبت نمرات و ارزشیابی توصیفی (کاملا ذخیره‌دار)</h3>
+            <p style="font-size:0.9em; color:gray;">یک بار لیست آزمون را در تاریخ دلخواه بسازید و برای همیشه در حافظه خواهد ماند.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; background:var(--primary-soft); padding:15px; border-radius:10px;">
+                <select id="exam-cls" onchange="renderExamList()" class="btn-outline"><option value="A">ششم الف</option><option value="B">ششم ب</option></select>
+                <input type="text" id="exam-date" style="width: 110px; text-align: center;" placeholder="تاریخ (مثل ۱۴۰۲/۰۸/۲۴)">
+                <input type="text" id="exam-title" placeholder="عنوان آزمون یا پرسش (مثل: ریاضی فصل ۱)" style="flex:1">
+                <button class="btn btn-main" onclick="createExam()">➕ ایجاد لیست</button>
+            </div>
+            
+            <hr style="border-color:var(--border); margin:20px 0;">
+            <h4>📋 لیست آزمون‌های قبلی (برای مشاهده کلیک کنید):</h4>
+            <div id="exam-list-container" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 20px;"></div>
+
+            <!-- بخش ورود نمرات -->
+            <div id="exam-details" style="display:none; overflow-x:auto; border:1px solid var(--border); padding:15px; border-radius:10px; background:var(--bg);">
+                <h3 id="current-exam-title" style="color:var(--primary); text-align:center;"></h3>
+                <p style="text-align:center; font-size:0.85em; color:gray;">نمره یا توصیف را وارد کنید. برای ارسال به ولی، حتما اول ذخیره را بزنید.</p>
+                <table>
+                    <thead><tr><th>نام دانش‌آموز</th><th>نمره / ارزشیابی</th><th>اطلاع به والدین</th></tr></thead>
+                    <tbody id="exam-tbody"></tbody>
+                </table>
+                <br>
+                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <button class="btn btn-success" onclick="saveExamScores()">💾 ذخیره نمرات این لیست</button>
+                    <button class="btn btn-danger" onclick="deleteExam()">🗑️ حذف کل این لیست</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- بررسی تکالیف -->
+    <div id="tab-homework" class="tab-content">
+        <div class="card">
+            <h3>بررسی تکالیف (تاریخ‌دار)</h3>
+            <p style="font-size:0.9em; color:gray;">برای دیدن تکالیف روزهای قبل، کافیست تاریخ را به صورت دستی تغییر دهید و روی صفحه کلیک کنید.</p>
+            <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <select id="classToggleHW" onchange="renderHomework()" class="btn-outline">
+                    <option value="A">ششم الف</option><option value="B">ششم ب</option>
+                </select>
+                <input type="text" id="hw-date" style="width: 120px; text-align: center;" onchange="renderHomework()" placeholder="تاریخ">
+                <button class="btn btn-main" onclick="saveHomework()">💾 ذخیره تکالیف این تاریخ</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>نام دانش‌آموز</th><th>وضعیت تکلیف</th><th>توضیحات معلم</th></tr></thead>
+                    <tbody id="hw-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- حضور و غیاب -->
+    <div id="tab-attendance" class="tab-content">
+        <div class="card">
+            <h3>حضور و غیاب روزانه (تاریخ‌دار)</h3>
+            <p style="font-size:0.9em; color:gray;">با تغییر دادن تاریخ در کادر زیر، لیست غایبینِ دقیقاً همان روز به شما نشان داده می‌شود!</p>
+            <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <select id="classToggleAtt" onchange="renderAttendance()" class="btn-outline">
+                    <option value="A">ششم الف</option><option value="B">ششم ب</option>
+                </select>
+                <input type="text" id="att-date" style="width: 120px; text-align: center;" onchange="renderAttendance()" placeholder="تاریخ">
+                <button class="btn btn-main" onclick="saveAttendance()">💾 ذخیره حاضری این تاریخ</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>نام دانش‌آموز</th><th>وضعیت</th><th>توضیحات (مثل: بیمار)</th></tr></thead>
+                    <tbody id="att-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- یادداشت‌های معلم -->
+    <div id="tab-notes" class="tab-content">
+        <div class="card">
+            <h3>📌 دفترچه یادداشت معلم</h3>
+            <p style="font-size: 0.9em; color: gray;">یادآوری‌ها، کارهای فردا، یا نکات خاص دانش‌آموزان را اینجا بنویسید (خودکار ذخیره می‌شود):</p>
+            <textarea id="teacher-notes" rows="10" style="width: 100%; box-sizing: border-box; resize: vertical;" onkeyup="saveNotes()" placeholder="مثلاً: فردا حتماً از علی درس بپرسم..."></textarea>
         </div>
     </div>
 
     <!-- گردونه -->
-    <div id="tab-draw" class="tab-content" style="display:none">
+    <div id="tab-draw" class="tab-content">
         <div class="card wheel-box">
             <h2>انتخاب تصادفی دانش‌آموز</h2>
-            <p style="color: gray; font-size: 0.9em;">(شانس افرادی که مثبت بیشتری دارند بالاتر است)</p>
+            <select id="classToggleDraw" class="btn-outline" style="margin-bottom:20px;">
+                <option value="A">ششم الف</option><option value="B">ششم ب</option>
+            </select>
             <div id="winner-name">---</div>
             <button class="btn btn-main" style="padding:15px 40px; font-size:1.2rem" onclick="spinWheel()">بچرخون!</button>
         </div>
     </div>
 
     <!-- تایمر -->
-    <div id="tab-timer" class="tab-content" style="display:none">
+    <div id="tab-timer" class="tab-content">
         <div class="card" style="text-align: center;">
             <h2>زمان‌سنج آزمون</h2>
             <div id="timer-box">00:00</div>
             <div style="display: flex; gap: 10px; justify-content: center;">
-                <input type="number" id="timeInput" placeholder="دقیقه" style="padding:10px; border-radius:8px; border:1px solid var(--border); width:80px; text-align: center;">
+                <input type="number" id="timeInput" placeholder="دقیقه" style="width:80px; text-align: center;">
                 <button class="btn btn-main" onclick="startTimer()">شروع</button>
                 <button class="btn btn-outline" onclick="resetTimer()">توقف</button>
             </div>
@@ -122,15 +254,34 @@
     </div>
 
     <!-- چیدمان -->
-    <div id="tab-seat" class="tab-content" style="display:none">
+    <div id="tab-seat" class="tab-content">
         <div class="card">
-            <h3 style="text-align: center; margin-bottom: 20px;">تابلو هوشمند کلاس</h3>
+            <div style="display: flex; justify-content:space-between; margin-bottom: 20px;">
+                <h3>تابلو هوشمند کلاس</h3>
+                <select id="classToggleSeat" onchange="renderSeating()" class="btn-outline">
+                    <option value="A">ششم الف</option><option value="B">ششم ب</option>
+                </select>
+            </div>
             <div class="seating-grid" id="seating-map"></div>
+        </div>
+    </div>
+    
+    <!-- کلاس آنلاین -->
+    <div id="tab-online" class="tab-content">
+        <div class="card" style="text-align: center;">
+            <h3>مدیریت کلاس آنلاین</h3>
+            <p>لینک کلاس مجازی خود (شاد، قرار و...) را کپی کنید:</p>
+            <input type="url" id="online-link" placeholder="https://..." style="width:80%; max-width:500px; padding:12px; direction:ltr; text-align:left; margin-bottom:20px;">
+            <br>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button class="btn btn-outline" onclick="saveOnlineLink()">💾 ذخیره لینک</button>
+                <button class="btn btn-success" onclick="openOnlineClass()">🚀 ورود به کلاس آنلاین</button>
+            </div>
         </div>
     </div>
 
     <!-- تنظیمات -->
-    <div id="tab-config" class="tab-content" style="display:none">
+    <div id="tab-config" class="tab-content">
         <div class="card">
             <h3>🎨 تغییر رنگ کل پنل</h3>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -145,44 +296,54 @@
         </div>
         <div class="card">
             <h3>💾 خروجی اطلاعات</h3>
-            <button class="btn btn-outline" onclick="exportExcel()">دانلود فایل اکسل (CSV)</button>
-            <button class="btn btn-outline" onclick="saveBackup()">پشتیبان‌گیری کل داده‌ها (JSON)</button>
+            <button class="btn btn-outline" onclick="exportExcel()">دانلود فایل اکسل امتیازات</button>
+            <button class="btn btn-outline" onclick="saveBackup()">پشتیبان‌گیری کامل داده‌ها (JSON)</button>
         </div>
     </div>
 
     <!-- چاپ کاربرگ -->
-    <div id="tab-print" class="tab-content" style="display:none">
+    <div id="tab-print" class="tab-content">
         <div class="card no-print">
-            <h3>تولید کاربرگ رسمی</h3>
-            <p>این فرم دقیقاً مشابه فرم آموزش و پرورش تولید می‌شود و آماده پرینت روی A4 است.</p>
+            <h3>تولید کاربرگ رسمی آموزش و پرورش</h3>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
-                <input type="text" id="subjectName" placeholder="نام درس (مثلاً هدیه‌های آسمان)" style="padding:10px; border:1px solid var(--border); border-radius:8px; flex: 1;">
-                <input type="text" id="yearName" value="۱۴۰۵-۱۴۰۶" placeholder="سال تحصیلی" style="padding:10px; border:1px solid var(--border); border-radius:8px; width: 120px;">
+                <select id="classTogglePrint" onchange="renderPrintTable()" class="btn-outline">
+                    <option value="A">ششم الف</option><option value="B">ششم ب</option>
+                </select>
+                <input type="text" id="subjectName" onkeyup="renderPrintTable()" placeholder="نام درس (مثلاً کار و فناوری)" style="flex: 1;">
+                <input type="text" id="yearName" onkeyup="renderPrintTable()" value="۱۴۰۵-۱۴۰۶" placeholder="سال تحصیلی" style="width: 120px;">
                 <button class="btn btn-main" onclick="window.print()">🖨️ چاپ کاربرگ</button>
             </div>
         </div>
         <div class="official-form">
             <div class="header-print">
-                <div style="flex: 1; line-height: 1.8;">
+                <div style="flex: 1; line-height: 2;">
                     استان: <strong>هرمزگان</strong><br>
                     مدرسه: <strong>شهید قاسم سلیمانی</strong><br>
-                    رشته: <strong>دوره ابتدایی ۶ ساله توصیفی</strong>
+                    کد: <strong>۸۰۰۴۱۱۴۶</strong><br>
+                    دوره تحصیلی: <strong>ضمن سال</strong><br>
                 </div>
-                <div style="flex: 1; text-align: center; line-height: 1.5; font-weight: bold; font-size: 14px;">
+                <div style="flex: 1; text-align: center; line-height: 1.8; font-weight: bold; font-size: 13px;">
                     جمهوری اسلامی ایران<br>
                     وزارت آموزش و پرورش<br>
                     دوره ابتدایی توصیفی<br>
                     کار برگ دبیر
                 </div>
-                <div style="flex: 1; text-align: left; line-height: 1.8;">
+                <div style="flex: 1; text-align: left; line-height: 2;">
                     منطقه: <strong>شیب کوه</strong><br>
-                    دوره تحصیلی: <strong>ضمن سال</strong><br>
+                    رشته: <strong>دوره ابتدایی ۶ ساله توصیفی</strong><br>
                     سال: <strong id="p-year">۱۴۰۵-۱۴۰۶</strong>
                 </div>
             </div>
-            <div style="margin-top: 10px; font-weight: bold; border: 1px solid black; padding: 5px; background: #f9f9f9;">
-                درس: <span id="p-subj"></span> | کلاس: <span id="p-cls"></span> | نام دبیر: ایوب احمدی
+            
+            <div class="sub-header-print">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <span>درس: <strong id="p-subj"></strong></span>
+                    <span>کلاس: <strong id="p-cls"></strong></span>
+                    <span>پایه: <strong>ششم</strong></span>
+                    <span>نام دبیر: <strong>ایوب احمدی</strong></span>
+                </div>
             </div>
+
             <table class="official-table" id="print-table-content"></table>
         </div>
     </div>
@@ -219,95 +380,309 @@
         {id:'21170012779', f:'نجیب الله', n:'نعمتی ابراهیم'}, {id:'3480398324', f:'محمد', n:'یوسفی فرامرز'}
     ];
 
-    let state = JSON.parse(localStorage.getItem('azmoonyar_state')) || { scores: {}, theme: 'blue' };
-    function save() { localStorage.setItem('azmoonyar_state', JSON.stringify(state)); }
+    let state = JSON.parse(localStorage.getItem('azmoonyar_mega')) || { 
+        scores: {}, theme: 'blue', onlineLink: '', notes: '', exams: [], attendance: {}, homework: {} 
+    };
+    if(!state.exams) state.exams = [];
+    if(!state.attendance) state.attendance = {};
+    if(!state.homework) state.homework = {};
+    
+    let currentExamId = null;
+
+    function save() { localStorage.setItem('azmoonyar_mega', JSON.stringify(state)); }
+
+    function getShamsiDate() {
+        return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    }
+
+    window.onload = () => {
+        const today = getShamsiDate();
+        document.getElementById('nav-date').innerText = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date());
+        
+        document.getElementById('att-date').value = today;
+        document.getElementById('hw-date').value = today;
+        document.getElementById('exam-date').value = today;
+        
+        if(state.onlineLink) document.getElementById('online-link').value = state.onlineLink;
+        if(state.notes) document.getElementById('teacher-notes').value = state.notes;
+        changeTheme(state.theme);
+        renderList();
+    };
 
     function openTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('tab-' + tabId).style.display = 'block';
         event.target.classList.add('active');
+        
+        if(tabId === 'leaderboard') renderLeaderboard();
+        if(tabId === 'homework') renderHomework();
+        if(tabId === 'attendance') renderAttendance();
+        if(tabId === 'exams') renderExamList();
         if(tabId === 'seat') renderSeating();
         if(tabId === 'print') renderPrintTable();
     }
 
-    function changeTheme(themeName) {
-        document.body.setAttribute('data-theme', themeName);
-        state.theme = themeName; save();
-    }
-    changeTheme(state.theme);
+    function changeTheme(tName) { document.body.setAttribute('data-theme', tName); state.theme = tName; save(); }
 
-    function renderStudents() {
-        const cls = document.getElementById('classToggle').value;
-        const list = cls === 'A' ? studentsA : studentsB;
-        document.getElementById('header-class').innerText = 'کلاس ششم ' + (cls === 'A' ? 'الف' : 'ب');
-        const container = document.getElementById('student-container');
-        
-        container.innerHTML = list.map(s => `
+    function renderList() {
+        const list = document.getElementById('classToggleList').value === 'A' ? studentsA : studentsB;
+        document.getElementById('student-list-container').innerHTML = list.map(s => `
             <div class="student-row">
-                <div style="display:flex; align-items:center; gap:10px; min-width:200px;">
-                    <strong style="color:var(--primary)">${s.n}</strong>
-                    <span style="font-size:0.8em; color:gray">(${s.f})</span>
-                </div>
+                <div style="min-width:200px;"><strong>${s.n}</strong> <span style="font-size:0.8em; color:gray">(${s.f})</span></div>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <button class="btn btn-outline" style="padding:5px 10px;" onclick="updateScore('${s.n}', -1)">-</button>
                     <strong style="width:25px; text-align:center; font-size:1.2em;">${state.scores[s.n] || 0}</strong>
                     <button class="btn btn-main" style="padding:5px 10px;" onclick="updateScore('${s.n}', 1)">+</button>
-                    <button class="btn btn-outline" style="font-size:0.75rem; padding:8px;" onclick="copyParentMsg('${s.n}')">📩 پیام</button>
                 </div>
             </div>
         `).join('');
     }
+    function updateScore(name, delta) { state.scores[name] = (state.scores[name]||0)+delta; save(); renderList(); }
 
-    function updateScore(name, delta) {
-        state.scores[name] = (state.scores[name] || 0) + delta;
-        save(); renderStudents();
+    // ====== برترین‌ها ======
+    function renderLeaderboard() {
+        const cls = document.getElementById('classToggleLeader').value;
+        const list = cls === 'A' ? studentsA : studentsB;
+        let sorted = list.map(s => ({n: s.n, score: state.scores[s.n] || 0})).sort((a,b) => b.score - a.score).slice(0, 5);
+        document.getElementById('leaderboard-container').innerHTML = sorted.map((s, i) => `
+            <div class="leaderboard-item">
+                <span>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🏅'} ${s.n}</span>
+                <span>${s.score} امتیاز</span>
+            </div>
+        `).join('');
     }
 
-    function copyParentMsg(name) {
-        const score = state.scores[name] || 0;
-        navigator.clipboard.writeText(`ولی محترم دانش‌آموز ${name}، فرزند شما امروز در کلاس امتیاز ${score} را کسب کرد. با احترام، ایوب احمدی`);
-        alert('پیام کپی شد.');
+    // ====== آزمون‌ها و ارسال واتساپ ======
+    function createExam() {
+        const cls = document.getElementById('exam-cls').value;
+        const date = document.getElementById('exam-date').value;
+        const title = document.getElementById('exam-title').value;
+        if(!date || !title) return alert('تاریخ و عنوان آزمون الزامی است.');
+        
+        const id = Date.now().toString();
+        state.exams.push({ id, cls, date, title, scores: {} });
+        save();
+        document.getElementById('exam-title').value = '';
+        renderExamList();
+        openExam(id);
     }
 
-    function spinWheel() {
-        const list = document.getElementById('classToggle').value === 'A' ? studentsA : studentsB;
-        let pool = [];
+    function renderExamList() {
+        const cls = document.getElementById('exam-cls').value;
+        const filtered = state.exams.filter(e => e.cls === cls);
+        const container = document.getElementById('exam-list-container');
+        document.getElementById('exam-details').style.display = 'none';
+        
+        if(filtered.length === 0) {
+            container.innerHTML = '<p style="color:gray;">هنوز هیچ آزمونی برای این کلاس ثبت نشده است.</p>';
+            return;
+        }
+        container.innerHTML = filtered.map(e => `
+            <button class="btn btn-outline" style="background:var(--card-bg);" onclick="openExam('${e.id}')">
+                📅 ${e.date} <br> <strong style="color:var(--text)">${e.title}</strong>
+            </button>
+        `).join('');
+    }
+
+    function openExam(id) {
+        currentExamId = id;
+        const exam = state.exams.find(e => e.id === id);
+        if(!exam) return;
+        
+        document.getElementById('exam-details').style.display = 'block';
+        document.getElementById('current-exam-title').innerText = `آزمون: ${exam.title} (${exam.date})`;
+        
+        const list = exam.cls === 'A' ? studentsA : studentsB;
+        document.getElementById('exam-tbody').innerHTML = list.map(s => {
+            const val = exam.scores[s.n] || '';
+            const msg = encodeURIComponent(`با سلام، نمره/ارزشیابی دانش‌آموز ${s.n} در درس/آزمون "${exam.title}" تاریخ ${exam.date} برابر است با: ${val}\nمعلم: ایوب احمدی`);
+            const waLink = `https://wa.me/?text=${msg}`;
+            return `
+            <tr>
+                <td>${s.n}</td>
+                <td><input type="text" id="score_${s.id}" value="${val}" placeholder="نمره یا توصیف" style="width:100px; text-align:center;"></td>
+                <td>
+                    ${val ? `<a href="${waLink}" target="_blank" class="btn btn-success" style="text-decoration:none; display:inline-block; font-size:12px;">💬 ارسال به ولی</a>` : '<span style="color:gray; font-size:12px">اول نمره را ذخیره کنید</span>'}
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function saveExamScores() {
+        if(!currentExamId) return;
+        const exam = state.exams.find(e => e.id === currentExamId);
+        const list = exam.cls === 'A' ? studentsA : studentsB;
+        
         list.forEach(s => {
-            const weight = Math.max(1, (state.scores[s.n] || 0) + 2);
-            for(let i=0; i<weight; i++) pool.push(s.n);
+            const val = document.getElementById(`score_${s.id}`).value;
+            exam.scores[s.n] = val;
         });
-
-        let c = 0;
-        const anim = setInterval(() => {
-            document.getElementById('winner-name').innerText = pool[Math.floor(Math.random() * pool.length)];
-            c++;
-            if(c > 15) { clearInterval(anim); document.getElementById('winner-name').style.color = 'var(--primary)'; }
-        }, 80);
+        save();
+        alert('نمرات با موفقیت ذخیره شد.');
+        openExam(currentExamId); // Refresh to update whatsapp links
     }
 
-    let timer;
+    function deleteExam() {
+        if(!confirm('آیا مطمئن هستید که این لیست حذف شود؟ این کار غیرقابل بازگشت است.')) return;
+        state.exams = state.exams.filter(e => e.id !== currentExamId);
+        save();
+        renderExamList();
+    }
+
+    // ====== تکالیف ======
+    function renderHomework() {
+        const cls = document.getElementById('classToggleHW').value;
+        const date = document.getElementById('hw-date').value;
+        const list = cls === 'A' ? studentsA : studentsB;
+        
+        if(!state.homework[date]) state.homework[date] = {};
+        const hwDay = state.homework[date];
+
+        document.getElementById('hw-tbody').innerHTML = list.map(s => {
+            const stat = hwDay[s.n]?.s || 'انجام داده';
+            const desc = hwDay[s.n]?.d || '';
+            return `<tr>
+                <td>${s.n}</td>
+                <td>
+                    <select id="hw_s_${s.id}">
+                        <option value="انجام داده" ${stat==='انجام داده'?'selected':''}>انجام داده 🟢</option>
+                        <option value="ناقص" ${stat==='ناقص'?'selected':''}>ناقص 🟡</option>
+                        <option value="انجام نداده" ${stat==='انجام نداده'?'selected':''}>انجام نداده 🔴</option>
+                    </select>
+                </td>
+                <td><input type="text" id="hw_d_${s.id}" value="${desc}" placeholder="توضیح"></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function saveHomework() {
+        const date = document.getElementById('hw-date').value;
+        const cls = document.getElementById('classToggleHW').value;
+        const list = cls === 'A' ? studentsA : studentsB;
+        
+        if(!state.homework[date]) state.homework[date] = {};
+        list.forEach(s => {
+            state.homework[date][s.n] = {
+                s: document.getElementById(`hw_s_${s.id}`).value,
+                d: document.getElementById(`hw_d_${s.id}`).value
+            };
+        });
+        save();
+        alert('تکالیف این تاریخ ذخیره شد.');
+    }
+
+    // ====== حضور غیاب ======
+    function renderAttendance() {
+        const cls = document.getElementById('classToggleAtt').value;
+        const date = document.getElementById('att-date').value;
+        const list = cls === 'A' ? studentsA : studentsB;
+        
+        if(!state.attendance[date]) state.attendance[date] = {};
+        const attDay = state.attendance[date];
+
+        document.getElementById('att-tbody').innerHTML = list.map(s => {
+            const stat = attDay[s.n]?.s || 'حاضر';
+            const desc = attDay[s.n]?.d || '';
+            return `<tr>
+                <td>${s.n}</td>
+                <td>
+                    <select id="att_s_${s.id}">
+                        <option value="حاضر" ${stat==='حاضر'?'selected':''}>حاضر ✅</option>
+                        <option value="غایب" ${stat==='غایب'?'selected':''}>غایب ❌</option>
+                        <option value="موجه" ${stat==='موجه'?'selected':''}>موجه ⭕</option>
+                    </select>
+                </td>
+                <td><input type="text" id="att_d_${s.id}" value="${desc}" placeholder="مثلا: بیمار"></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function saveAttendance() {
+        const date = document.getElementById('att-date').value;
+        const cls = document.getElementById('classToggleAtt').value;
+        const list = cls === 'A' ? studentsA : studentsB;
+        
+        if(!state.attendance[date]) state.attendance[date] = {};
+        list.forEach(s => {
+            state.attendance[date][s.n] = {
+                s: document.getElementById(`att_s_${s.id}`).value,
+                d: document.getElementById(`att_d_${s.id}`).value
+            };
+        });
+        save();
+        alert('حاضری این تاریخ ذخیره شد.');
+    }
+
+    // ====== یادداشت ======
+    function saveNotes() {
+        state.notes = document.getElementById('teacher-notes').value;
+        save();
+    }
+
+    // ====== گردونه ======
+    function spinWheel() {
+        const cls = document.getElementById('classToggleDraw').value;
+        const list = cls === 'A' ? studentsA : studentsB;
+        let counter = 0;
+        const interval = setInterval(() => {
+            const random = list[Math.floor(Math.random() * list.length)];
+            document.getElementById('winner-name').innerText = random.n;
+            counter++;
+            if(counter > 20) {
+                clearInterval(interval);
+                document.getElementById('winner-name').style.transform = 'scale(1.2)';
+                setTimeout(() => document.getElementById('winner-name').style.transform = 'scale(1)', 300);
+            }
+        }, 100);
+    }
+
+    // ====== تایمر ======
+    let timerInterval;
     function startTimer() {
-        let sec = (document.getElementById('timeInput').value || 1) * 60;
-        clearInterval(timer);
-        timer = setInterval(() => {
-            if(sec <= 0) { clearInterval(timer); alert('زمان تمام شد!'); return; }
-            sec--;
-            document.getElementById('timer-box').innerText = `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+        clearInterval(timerInterval);
+        let time = parseInt(document.getElementById('timeInput').value) * 60;
+        if(isNaN(time) || time <= 0) return alert('دقیقه را وارد کنید');
+        
+        timerInterval = setInterval(() => {
+            time--;
+            let m = Math.floor(time / 60).toString().padStart(2, '0');
+            let s = (time % 60).toString().padStart(2, '0');
+            document.getElementById('timer-box').innerText = `${m}:${s}`;
+            if(time <= 0) { clearInterval(timerInterval); alert('زمان تمام شد!'); }
         }, 1000);
     }
-    function resetTimer() { clearInterval(timer); document.getElementById('timer-box').innerText = "00:00"; }
-
-    function renderSeating() {
-        const list = document.getElementById('classToggle').value === 'A' ? studentsA : studentsB;
-        document.getElementById('seating-map').innerHTML = list.map(s => `<div class="desk"><strong>${s.n.split(' ')[0]}</strong></div>`).join('');
+    function resetTimer() {
+        clearInterval(timerInterval);
+        document.getElementById('timer-box').innerText = '00:00';
     }
 
+    // ====== چیدمان ======
+    function renderSeating() {
+        const cls = document.getElementById('classToggleSeat').value;
+        let list = [...(cls === 'A' ? studentsA : studentsB)];
+        list = list.sort(() => Math.random() - 0.5);
+        document.getElementById('seating-map').innerHTML = list.map(s => `<div class="desk">${s.n}</div>`).join('');
+    }
+
+    // ====== آنلاین ======
+    function saveOnlineLink() {
+        state.onlineLink = document.getElementById('online-link').value;
+        save();
+        alert('لینک ذخیره شد.');
+    }
+    function openOnlineClass() {
+        if(state.onlineLink) window.open(state.onlineLink, '_blank');
+        else alert('ابتدا لینک را ذخیره کنید.');
+    }
+
+    // ====== چاپ ======
     function renderPrintTable() {
-        const cls = document.getElementById('classToggle').value;
+        const cls = document.getElementById('classTogglePrint').value;
         const list = cls === 'A' ? studentsA : studentsB;
-        document.getElementById('p-subj').innerText = document.getElementById('subjectName').value || ".........";
-        document.getElementById('p-cls').innerText = 'ششم ' + (cls === 'A' ? 'الف' : 'ب');
+        
+        document.getElementById('p-subj').innerText = document.getElementById('subjectName').value || '---';
+        document.getElementById('p-cls').innerText = cls === 'A' ? 'ششم الف' : 'ششم ب';
         document.getElementById('p-year').innerText = document.getElementById('yearName').value || "۱۴۰۵-۱۴۰۶";
 
         let html = `<tr><th>ردیف</th><th style="width:100px;">کد دانش آموزی</th><th>نام خانوادگی و نام</th><th>نام پدر</th>
@@ -333,8 +708,6 @@
         const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(state)], {type: 'application/json'}));
         a.download = "Azmoonyar_Backup.json"; a.click();
     }
-
-    renderStudents();
 </script>
 </body>
 </html>
