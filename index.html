@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آزمون‌یار احمدی - نسخه VIP</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-soft: #eff6ff;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        /* تم‌های رنگی */
+        [data-theme="green"] { --primary: #16a34a; --primary-soft: #f0fdf4; }
+        [data-theme="purple"] { --primary: #9333ea; --primary-soft: #faf5ff; }
+        [data-theme="red"] { --primary: #dc2626; --primary-soft: #fef2f2; }
+        [data-theme="cyan"] { --primary: #0891b2; --primary-soft: #ecfeff; }
+        [data-theme="orange"] { --primary: #ea580c; --primary-soft: #fff7ed; }
+        [data-theme="dark"] { 
+            --primary: #3b82f6; --bg: #0f172a; --card-bg: #1e293b; 
+            --text: #f8fafc; --border: #334155; --primary-soft: #1e3a8a;
+        }
+
+        body { font-family: Tahoma, Arial, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; transition: 0.3s; }
+        .nav { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        
+        .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; }
+        .tab-btn { background: var(--card-bg); border: 1px solid var(--border); padding: 10px 18px; border-radius: 10px; cursor: pointer; color: var(--text); white-space: nowrap; font-weight: bold; transition: 0.2s; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); }
+
+        .card { background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 20px; }
+        
+        /* دکمه‌ها */
+        .btn { border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; transition: 0.2s; font-weight: bold; }
+        .btn-main { background: var(--primary); color: white; }
+        .btn-main:hover { opacity: 0.9; transform: scale(1.02); }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+
+        .student-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); transition: 0.2s; flex-wrap: wrap; gap: 10px; }
+        .student-row:hover { background: var(--primary-soft); }
+
+        /* ابزارها */
+        #timer-box { font-size: 3rem; text-align: center; margin: 20px 0; font-family: monospace; color: var(--primary); direction: ltr; }
+        .wheel-box { text-align: center; padding: 40px 0; }
+        #winner-name { font-size: 2rem; color: var(--primary); margin: 20px 0; min-height: 40px; font-weight: bold; }
+
+        .seating-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; }
+        .desk { aspect-ratio: 1; background: var(--card-bg); border: 2px dashed var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.85rem; padding: 5px; box-shadow: var(--shadow); }
+
+        /* استایل چاپ */
+        @media print {
+            .nav, .tabs, .no-print { display: none !important; }
+            body { background: white; color: black; margin: 0; padding: 0; }
+            .card { box-shadow: none; border: none; padding: 0; }
+            .official-form { display: block !important; width: 100%; direction: rtl; }
+            .official-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            .official-table th, .official-table td { border: 1px solid black; padding: 6px; text-align: center; font-size: 12px; }
+            .official-table th { background-color: #f0f0f0 !important; }
+            .header-print { display: flex; justify-content: space-between; border: 1px solid black; padding: 10px; font-size: 13px; }
+        }
+        .official-form { display: none; }
+    </style>
+</head>
+<body data-theme="blue">
+
+<div class="nav">
+    <span>💎 آزمون‌یار احمدی</span>
+    <span id="header-class">کلاس ششم الف</span>
+</div>
+
+<div class="container">
+    <div class="tabs no-print">
+        <button class="tab-btn active" onclick="openTab('list')">👥 لیست کلاس</button>
+        <button class="tab-btn" onclick="openTab('draw')">🎲 گردونه شانس</button>
+        <button class="tab-btn" onclick="openTab('timer')">⏱️ تایمر آزمون</button>
+        <button class="tab-btn" onclick="openTab('seat')">🪑 چیدمان</button>
+        <button class="tab-btn" onclick="openTab('print')">📄 چاپ کاربرگ</button>
+        <button class="tab-btn" onclick="openTab('config')">⚙️ تنظیمات رنگ</button>
+    </div>
+
+    <!-- لیست و نمره -->
+    <div id="tab-list" class="tab-content">
+        <div class="card">
+            <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                <select id="classToggle" onchange="renderStudents()" class="btn-outline" style="padding:8px; border-radius: 8px; font-family: inherit;">
+                    <option value="A">ششم الف (۲۴ نفر)</option>
+                    <option value="B">ششم ب (۲۴ نفر)</option>
+                </select>
+                <button class="btn btn-main" onclick="alert('تغییرات ذخیره شد.')">💾 ذخیره</button>
+            </div>
+            <div id="student-container"></div>
+        </div>
+    </div>
+
+    <!-- گردونه -->
+    <div id="tab-draw" class="tab-content" style="display:none">
+        <div class="card wheel-box">
+            <h2>انتخاب تصادفی دانش‌آموز</h2>
+            <p style="color: gray; font-size: 0.9em;">(شانس افرادی که مثبت بیشتری دارند بالاتر است)</p>
+            <div id="winner-name">---</div>
+            <button class="btn btn-main" style="padding:15px 40px; font-size:1.2rem" onclick="spinWheel()">بچرخون!</button>
+        </div>
+    </div>
+
+    <!-- تایمر -->
+    <div id="tab-timer" class="tab-content" style="display:none">
+        <div class="card" style="text-align: center;">
+            <h2>زمان‌سنج آزمون</h2>
+            <div id="timer-box">00:00</div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <input type="number" id="timeInput" placeholder="دقیقه" style="padding:10px; border-radius:8px; border:1px solid var(--border); width:80px; text-align: center;">
+                <button class="btn btn-main" onclick="startTimer()">شروع</button>
+                <button class="btn btn-outline" onclick="resetTimer()">توقف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- چیدمان -->
+    <div id="tab-seat" class="tab-content" style="display:none">
+        <div class="card">
+            <h3 style="text-align: center; margin-bottom: 20px;">تابلو هوشمند کلاس</h3>
+            <div class="seating-grid" id="seating-map"></div>
+        </div>
+    </div>
+
+    <!-- تنظیمات -->
+    <div id="tab-config" class="tab-content" style="display:none">
+        <div class="card">
+            <h3>🎨 تغییر رنگ کل پنل</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn" style="background:#2563eb; color:white" onclick="changeTheme('blue')">آبی</button>
+                <button class="btn" style="background:#16a34a; color:white" onclick="changeTheme('green')">سبز</button>
+                <button class="btn" style="background:#9333ea; color:white" onclick="changeTheme('purple')">بنفش</button>
+                <button class="btn" style="background:#dc2626; color:white" onclick="changeTheme('red')">قرمز</button>
+                <button class="btn" style="background:#0891b2; color:white" onclick="changeTheme('cyan')">فیروزه‌ای</button>
+                <button class="btn" style="background:#ea580c; color:white" onclick="changeTheme('orange')">نارنجی</button>
+                <button class="btn" style="background:#1e293b; color:white" onclick="changeTheme('dark')">حالت شب</button>
+            </div>
+        </div>
+        <div class="card">
+            <h3>💾 خروجی اطلاعات</h3>
+            <button class="btn btn-outline" onclick="exportExcel()">دانلود فایل اکسل (CSV)</button>
+            <button class="btn btn-outline" onclick="saveBackup()">پشتیبان‌گیری کل داده‌ها (JSON)</button>
+        </div>
+    </div>
+
+    <!-- چاپ کاربرگ -->
+    <div id="tab-print" class="tab-content" style="display:none">
+        <div class="card no-print">
+            <h3>تولید کاربرگ رسمی</h3>
+            <p>این فرم دقیقاً مشابه فرم آموزش و پرورش تولید می‌شود و آماده پرینت روی A4 است.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <input type="text" id="subjectName" placeholder="نام درس (مثلاً هدیه‌های آسمان)" style="padding:10px; border:1px solid var(--border); border-radius:8px; flex: 1;">
+                <input type="text" id="yearName" value="۱۴۰۵-۱۴۰۶" placeholder="سال تحصیلی" style="padding:10px; border:1px solid var(--border); border-radius:8px; width: 120px;">
+                <button class="btn btn-main" onclick="window.print()">🖨️ چاپ کاربرگ</button>
+            </div>
+        </div>
+        <div class="official-form">
+            <div class="header-print">
+                <div style="flex: 1; line-height: 1.8;">
+                    استان: <strong>هرمزگان</strong><br>
+                    مدرسه: <strong>شهید قاسم سلیمانی</strong><br>
+                    رشته: <strong>دوره ابتدایی ۶ ساله توصیفی</strong>
+                </div>
+                <div style="flex: 1; text-align: center; line-height: 1.5; font-weight: bold; font-size: 14px;">
+                    جمهوری اسلامی ایران<br>
+                    وزارت آموزش و پرورش<br>
+                    دوره ابتدایی توصیفی<br>
+                    کار برگ دبیر
+                </div>
+                <div style="flex: 1; text-align: left; line-height: 1.8;">
+                    منطقه: <strong>شیب کوه</strong><br>
+                    دوره تحصیلی: <strong>ضمن سال</strong><br>
+                    سال: <strong id="p-year">۱۴۰۵-۱۴۰۶</strong>
+                </div>
+            </div>
+            <div style="margin-top: 10px; font-weight: bold; border: 1px solid black; padding: 5px; background: #f9f9f9;">
+                درس: <span id="p-subj"></span> | کلاس: <span id="p-cls"></span> | نام دبیر: ایوب احمدی
+            </div>
+            <table class="official-table" id="print-table-content"></table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const studentsA = [
+        {id:'3430627419', f:'علی', n:'آبخیز عامر'}, {id:'3430612330', f:'حسین', n:'احمدی عبدالله'},
+        {id:'3430573777', f:'عبداله', n:'باورداثی بنیامین'}, {id:'3430625858', f:'احمد', n:'باورداثی علی'},
+        {id:'3480424880', f:'ناصر', n:'بشری محمد'}, {id:'5250740812', f:'داود', n:'بلوچی سدیس'},
+        {id:'5970414451', f:'محمد', n:'بیجارزهی سجاد'}, {id:'3430613566', f:'محمد', n:'تفت عبدالرحمان'},
+        {id:'3430607787', f:'ابراهیم', n:'چوبین یوسف (ابراهیم)'}, {id:'3430636264', f:'علی', n:'چوبین یوسف (علی)'},
+        {id:'3430601649', f:'محمد', n:'خماسی سینا'}, {id:'6680464218', f:'محمدجاسم', n:'دادی محمدسجاد'},
+        {id:'3691541488', f:'عیسی', n:'درزاده اسامه'}, {id:'3430626900', f:'علی', n:'دهقان امیرعلی'},
+        {id:'3430602580', f:'عادل', n:'راشدی امیرحسین'}, {id:'3480420702', f:'حسین', n:'رحیمی عمر'},
+        {id:'3430634121', f:'ابراهیم', n:'رستمی پور احمد'}, {id:'3430629241', f:'احمد', n:'روحانی نژاد محمد'},
+        {id:'3430629403', f:'فرید', n:'زارع انس'}, {id:'3430621763', f:'صالح', n:'سالمی حسام'},
+        {id:'3560444551', f:'علی', n:'عرب خلیل'}, {id:'5150377244', f:'محمد', n:'کریم پور محمدرضا'},
+        {id:'3430635136', f:'حسین', n:'محمودی مرد علی'}, {id:'3430612578', f:'ناصر', n:'مؤمنی محمد'}
+    ];
+
+    const studentsB = [
+        {id:'6490140330', f:'بهروز', n:'برازنده امیرمحمد'}, {id:'3430632544', f:'خالد', n:'تن زده ثامر'},
+        {id:'3430614732', f:'ابراهیم', n:'تن زده طاها'}, {id:'3430634873', f:'فرید', n:'جاسمی امین'},
+        {id:'3430629500', f:'یوسف', n:'جان فزا امین'}, {id:'3430601886', f:'حسین', n:'جان فزا بنیامین'},
+        {id:'3691544908', f:'بشیر', n:'جمالزهی مقدم سبحان'}, {id:'7040199475', f:'حبیب', n:'جمالی هادی'},
+        {id:'3430609445', f:'ابراهیم', n:'داشن محمد'}, {id:'6680444276', f:'محمدصدیق', n:'دامنی سبحان'},
+        {id:'3430593001', f:'محمد', n:'دهبان علی'}, {id:'3430585082', f:'موسی', n:'دهقانی ماهان'},
+        {id:'3430602262', f:'حسن', n:'رامشک محمدمهدی'}, {id:'3430606373', f:'علی', n:'رحیمی ابراهیم'},
+        {id:'3430633591', f:'مختار', n:'رواز محمد'}, {id:'3430542601', f:'محمد', n:'زارع عبدالرحمان'},
+        {id:'3430611865', f:'مسلم', n:'زارعی علی'}, {id:'3430614147', f:'ابراهیم', n:'عبدالهی احمد'},
+        {id:'3581956845', f:'فرهاد', n:'محمودزهی تاجی امیرپاشا'}, {id:'3430610257', f:'حسن', n:'منصوری احمد'},
+        {id:'3430617391', f:'ابراهیم', n:'نجاتی امیرعبدالله'}, {id:'3430610923', f:'علی', n:'نجاتی رضا'},
+        {id:'21170012779', f:'نجیب الله', n:'نعمتی ابراهیم'}, {id:'3480398324', f:'محمد', n:'یوسفی فرامرز'}
+    ];
+
+    let state = JSON.parse(localStorage.getItem('azmoonyar_state')) || { scores: {}, theme: 'blue' };
+    function save() { localStorage.setItem('azmoonyar_state', JSON.stringify(state)); }
+
+    function openTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tabId).style.display = 'block';
+        event.target.classList.add('active');
+        if(tabId === 'seat') renderSeating();
+        if(tabId === 'print') renderPrintTable();
+    }
+
+    function changeTheme(themeName) {
+        document.body.setAttribute('data-theme', themeName);
+        state.theme = themeName; save();
+    }
+    changeTheme(state.theme);
+
+    function renderStudents() {
+        const cls = document.getElementById('classToggle').value;
+        const list = cls === 'A' ? studentsA : studentsB;
+        document.getElementById('header-class').innerText = 'کلاس ششم ' + (cls === 'A' ? 'الف' : 'ب');
+        const container = document.getElementById('student-container');
+        
+        container.innerHTML = list.map(s => `
+            <div class="student-row">
+                <div style="display:flex; align-items:center; gap:10px; min-width:200px;">
+                    <strong style="color:var(--primary)">${s.n}</strong>
+                    <span style="font-size:0.8em; color:gray">(${s.f})</span>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="btn btn-outline" style="padding:5px 10px;" onclick="updateScore('${s.n}', -1)">-</button>
+                    <strong style="width:25px; text-align:center; font-size:1.2em;">${state.scores[s.n] || 0}</strong>
+                    <button class="btn btn-main" style="padding:5px 10px;" onclick="updateScore('${s.n}', 1)">+</button>
+                    <button class="btn btn-outline" style="font-size:0.75rem; padding:8px;" onclick="copyParentMsg('${s.n}')">📩 پیام</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateScore(name, delta) {
+        state.scores[name] = (state.scores[name] || 0) + delta;
+        save(); renderStudents();
+    }
+
+    function copyParentMsg(name) {
+        const score = state.scores[name] || 0;
+        navigator.clipboard.writeText(`ولی محترم دانش‌آموز ${name}، فرزند شما امروز در کلاس امتیاز ${score} را کسب کرد. با احترام، ایوب احمدی`);
+        alert('پیام کپی شد.');
+    }
+
+    function spinWheel() {
+        const list = document.getElementById('classToggle').value === 'A' ? studentsA : studentsB;
+        let pool = [];
+        list.forEach(s => {
+            const weight = Math.max(1, (state.scores[s.n] || 0) + 2);
+            for(let i=0; i<weight; i++) pool.push(s.n);
+        });
+
+        let c = 0;
+        const anim = setInterval(() => {
+            document.getElementById('winner-name').innerText = pool[Math.floor(Math.random() * pool.length)];
+            c++;
+            if(c > 15) { clearInterval(anim); document.getElementById('winner-name').style.color = 'var(--primary)'; }
+        }, 80);
+    }
+
+    let timer;
+    function startTimer() {
+        let sec = (document.getElementById('timeInput').value || 1) * 60;
+        clearInterval(timer);
+        timer = setInterval(() => {
+            if(sec <= 0) { clearInterval(timer); alert('زمان تمام شد!'); return; }
+            sec--;
+            document.getElementById('timer-box').innerText = `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+        }, 1000);
+    }
+    function resetTimer() { clearInterval(timer); document.getElementById('timer-box').innerText = "00:00"; }
+
+    function renderSeating() {
+        const list = document.getElementById('classToggle').value === 'A' ? studentsA : studentsB;
+        document.getElementById('seating-map').innerHTML = list.map(s => `<div class="desk"><strong>${s.n.split(' ')[0]}</strong></div>`).join('');
+    }
+
+    function renderPrintTable() {
+        const cls = document.getElementById('classToggle').value;
+        const list = cls === 'A' ? studentsA : studentsB;
+        document.getElementById('p-subj').innerText = document.getElementById('subjectName').value || ".........";
+        document.getElementById('p-cls').innerText = 'ششم ' + (cls === 'A' ? 'الف' : 'ب');
+        document.getElementById('p-year').innerText = document.getElementById('yearName').value || "۱۴۰۵-۱۴۰۶";
+
+        let html = `<tr><th>ردیف</th><th style="width:100px;">کد دانش آموزی</th><th>نام خانوادگی و نام</th><th>نام پدر</th>
+            <th style="width:25px;">۱</th><th style="width:25px;">۲</th><th style="width:25px;">۳</th><th style="width:25px;">۴</th><th style="width:25px;">۵</th>
+            <th style="width:25px;">۶</th><th style="width:25px;">۷</th><th style="width:25px;">۸</th><th style="width:25px;">۹</th><th style="width:25px;">۱۰</th>
+            <th style="width:80px;">ملاحظات</th></tr>`;
+        
+        list.forEach((s, i) => {
+            html += `<tr><td>${i+1}</td><td style="font-family: Arial;">${s.id}</td><td style="text-align:right; padding-right:5px;">${s.n}</td><td>${s.f}</td>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
+        });
+        document.getElementById('print-table-content').innerHTML = html;
+    }
+
+    function exportExcel() {
+        let csv = "\ufeffنام دانش آموز,امتیاز\n";
+        Object.keys(state.scores).forEach(n => csv += `${n},${state.scores[n]}\n`);
+        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
+        a.download = "Scores.csv"; a.click();
+    }
+    
+    function saveBackup() {
+        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(state)], {type: 'application/json'}));
+        a.download = "Azmoonyar_Backup.json"; a.click();
+    }
+
+    renderStudents();
+</script>
+</body>
+</html>
